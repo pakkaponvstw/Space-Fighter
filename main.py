@@ -30,10 +30,9 @@ class SpaceGame(GameApp):
 
         self.init_key_handlers()
 
-        self.score = 0
+        
         self.score_wait = 0
-        self.score_text = Text(self, '', 100, 20)
-        self.update_score_text()
+        self.score = StatusWithText(self, 100, 20, 'Score: %d', 0)
         self.enemy_creation_strategies = [
             (0.2, StarEnemyGenerationStrategy()),
             (1.0, EdgeEnemyGenerationStrategy())
@@ -78,9 +77,6 @@ class SpaceGame(GameApp):
 
             self.update_bomb_power_text()
 
-    def update_score_text(self):
-        self.score_text.set_text('Score: %d' % self.score)
-
     def update_bomb_power_text(self):
         self.bomb_power_text.set_text('Power: %d%%' % self.bomb_power)
 
@@ -90,9 +86,9 @@ class SpaceGame(GameApp):
     def update_score(self):
         self.score_wait += 1
         if self.score_wait >= SCORE_WAIT:
-            self.score += 1
+            self.score.value += 1
             self.score_wait = 0
-            self.update_score_text()
+            
 
     def update_bomb_power(self):
         self.bomb_wait += 1
@@ -226,6 +222,28 @@ class ShipMovementKeyReleasedHandler(GameKeyboardHandler):
             self.ship.stop_turn('LEFT')
         elif event.keysym == 'Right':
             self.ship.stop_turn('RIGHT')
+
+
+class StatusWithText:
+    def __init__(self, app, x, y, text_template, default_value=0):
+        self.x = x
+        self.y = y
+        self.text_template = text_template
+        self._value = default_value
+        self.label_text = Text(app, '', x, y)
+        self.update_label()
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, v):
+        self._value = v
+        self.update_label()
+    
+    def update_label(self):
+        self.label_text.set_text(self.text_template % self.value)
 
 
 if __name__ == "__main__":
